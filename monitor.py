@@ -34,9 +34,9 @@ def send_alert(message):
 
 devices = [
 
-    {"name":"AC Pro F-Floor", "ip": "192.168.10.254"},
-    {"name": "AC Lr Stair", "ip": "192.168.10.55"},
-    {"name": "AC Pro GR-Floor", "ip": "192.168.10.35"},
+    {"name":"AC Pro F-Floor", "ip": "192.168.10.254", "Type": "Access point"},
+    {"name": "AC Lr Stair", "ip": "192.168.10.55", "Type": "Access point"}, 
+    {"name": "AC Pro GR-Floor", "ip": "192.168.10.35", "Type": "Access point"}, 
 
 ]
 
@@ -63,6 +63,7 @@ def monitor_device(device, previous_status):
 
                 f"🟢 NETWORK RESTORED\n\n" 
                 f"Device: {device['name']}\n" 
+                f"Type: {device['Type']}\n"
                 f"IP: {device['ip']}\n" 
                 f"Status: ONLINE"
 
@@ -73,7 +74,8 @@ def monitor_device(device, previous_status):
             message = (
 
                 f"🚨 NETWORK ALERT\n\n" 
-                f"Device: {device['name']}\n" 
+                f"Device: {device['name']}\n"
+                f"Type: {device['Type']}\n" 
                 f"IP: {device['ip']}\n" 
                 f"Status: OFFLINE"
 
