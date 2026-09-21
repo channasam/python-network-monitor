@@ -92,6 +92,8 @@ def monitor_device(device, previous_status):
 
         print(f"{device['name']:<20} {device['ip']:<16} OFFLINE")
 
+    return current_status
+
 
 while True:
 
@@ -105,11 +107,32 @@ while True:
 
     print('-' * 50)
 
+    online_count = 0
+    offline_count = 0
+
     for device in devices:
 
-        monitor_device(device, previous_status)
+       status = monitor_device(device, previous_status)
 
-    time.sleep(10)
+       if status:
+
+           online_count += 1
+
+       else:
+
+           offline_count += 1
+
+    print(f"\n{"-" * 50}")
+    print("Summary:")
+    print("-" * 50)
+    print(f"\nOnline devices: {online_count}")
+    print(f"Offline devices: {offline_count}")
+    print(f"Total devices: {len(devices)}")
+    print("-" * 50)
+
+    check_interval = 10
+
+    time.sleep(check_interval)
 
 
 
