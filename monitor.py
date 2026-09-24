@@ -5,6 +5,7 @@ import os
 from config import BOT_TOKEN, CHAT_ID, INTERVAL, PING_TIMEOUT
 from datetime import datetime
 
+#Python network tool with telegram bot
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
