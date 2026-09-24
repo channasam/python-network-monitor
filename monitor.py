@@ -1,11 +1,10 @@
 import telebot
 import subprocess
 import time
-from config import BOT_TOKEN, CHAT_ID
 import os
+from config import BOT_TOKEN, CHAT_ID
 from datetime import datetime
 
-# Python Network Monitor
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -21,7 +20,7 @@ def check_ping(ip_address):
         )
 
         return True
-
+    
     except subprocess.CalledProcessError:
 
         return False
@@ -34,9 +33,9 @@ def send_alert(message):
 
 devices = [
 
-    {"name":"AC Pro F-Floor", "ip": "192.168.10.254", "Type": "Access point"},
-    {"name": "AC Lr Stair", "ip": "192.168.10.55", "Type": "Access point"}, 
-    {"name": "AC Pro GR-Floor", "ip": "192.168.10.35", "Type": "Access point"}, 
+    {"name": "AC Pro F-Floor", "ip": "192.168.10.254", "type": "Access point"},
+    {"name": "AC Lr Stair", "ip": "192.168.10.55", "type": "Access Point"},
+    {"name": "AC Pro GR-Floor", "ip": "192.168.10.35", "type": "Access Point"},
 
 ]
 
@@ -55,15 +54,15 @@ def monitor_device(device, previous_status):
 
         previous_status[device["ip"]] = current_status
 
-    elif current_status != previous_status[device["ip"]]:
+    elif previous_status[device["ip"]] != current_status:
 
         if current_status:
 
             message = (
 
                 f"🟢 NETWORK RESTORED\n\n" 
-                f"Device: {device['name']}\n" 
-                f"Type: {device['Type']}\n"
+                f"Device: {device['name']}\n"
+                f"Type: {device['type']}\n" 
                 f"IP: {device['ip']}\n" 
                 f"Status: ONLINE"
 
@@ -75,7 +74,7 @@ def monitor_device(device, previous_status):
 
                 f"🚨 NETWORK ALERT\n\n" 
                 f"Device: {device['name']}\n"
-                f"Type: {device['Type']}\n" 
+                f"Type: {device['type']}\n" 
                 f"IP: {device['ip']}\n" 
                 f"Status: OFFLINE"
 
@@ -83,16 +82,15 @@ def monitor_device(device, previous_status):
 
         send_alert(message)
 
-    previous_status[device["ip"]] = current_status
-
-
     if current_status:
 
-        print(f"{device['name']:<20} {device['ip']:<16} ONLINE")
+        print(f"{device["name"]:<20} {device["type"]:<15} {device["ip"]:<16} ONLINE")
 
     else:
 
-        print(f"{device['name']:<20} {device['ip']:<16} OFFLINE")
+        print(f"{device["name"]:<20} {device["type"]:<15} {device["ip"]:<16} OFFLINE")
+
+    previous_status[device["ip"]] = current_status
 
     return current_status
 
@@ -100,43 +98,44 @@ def monitor_device(device, previous_status):
 while True:
 
     os.system("cls")
-    
+
     current_time = datetime.now().strftime("%H:%M:%S")
 
     print(f"\n{[current_time]} Checking device...\n")
 
-    print(f"{'Device':<20} {'IP Address':<16} Status")
+    print(f"{'Devices':<20} {'Type':<15} {'IP Address':<16} {"Status"}")
 
-    print('-' * 50)
+    print('-' * 60)
 
     online_count = 0
     offline_count = 0
 
     for device in devices:
 
-       status = monitor_device(device, previous_status)
+        status = monitor_device(device, previous_status)
 
-       if status:
+        if status:
 
-           online_count += 1
+            online_count += 1
 
-       else:
+        else:
 
-           offline_count += 1
+            offline_count += 1
 
-    print(f"\n{"-" * 50}")
-    print("Summary:")
-    print("-" * 50)
-    print(f"\nOnline devices: {online_count}")
-    print(f"Offline devices: {offline_count}")
-    print(f"Total devices: {len(devices)}")
-    print("-" * 50)
+    print("\n" + '-' * 60)
 
-    check_interval = 10
+    print("SUMMARY")
 
-    time.sleep(check_interval)
+    print('-' * 60)
 
+    print(f"Total Devices : {len(devices)}")
 
+    print(f"Online        : {online_count}")
 
+    print(f"Offline       : {offline_count}")
 
+    print('-' * 60)
 
+    interval = 10
+
+    time.sleep(interval)
