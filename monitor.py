@@ -5,7 +5,6 @@ import os
 from config import BOT_TOKEN, CHAT_ID, INTERVAL, PING_TIMEOUT
 from datetime import datetime
 
-#Python network tool with telegram bot
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -94,11 +93,11 @@ def print_device_status(device, current_status):
 
     if current_status:
     
-        print(f"{device["name"]:<20} {device["type"]:<15} {device["ip"]:<16} ONLINE")
+        print(f"{device['name']:<20} {device['type']:<15} {device['ip']:<16} ONLINE")
     
     else:
     
-        print(f"{device["name"]:<20} {device["type"]:<15} {device["ip"]:<16} OFFLINE")
+        print(f"{device['name']:<20} {device['type']:<15} {device['ip']:<16} OFFLINE")
 
 
 while True:
@@ -114,7 +113,7 @@ while True:
     print('-' * 60)
 
     online_count = 0
-    offline_count = 0
+    offline_count= 0
 
     for device in devices:
 
@@ -126,11 +125,11 @@ while True:
 
         else:
 
-           offline_count += 1
+            offline_count += 1
 
     print(f"\n{'-' * 60}")
     print("SUMMARY")
-    print('-' * 60)
+    print(f"{'-' * 60}")
     print(f"Total Devices : {len(devices)}")
     print(f"Online        : {online_count}")
     print(f"Offline       : {offline_count}")
