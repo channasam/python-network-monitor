@@ -4,6 +4,28 @@ import time
 import os
 from config import BOT_TOKEN, CHAT_ID, INTERVAL, PING_TIMEOUT
 from datetime import datetime
+import logging
+from logging.handlers import RotatingFileHandler
+
+
+handler = RotatingFileHandler(
+
+    filename="network_monitor.log",
+    maxBytes= 1024 * 1024,
+    backupCount= 3,
+    encoding="utf-8",
+)
+
+
+logging.basicConfig(
+
+    handlers=[handler],
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+
+logging.info("Network Monitor Started...")
 
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -58,6 +80,8 @@ def monitor_device(device, previous_status):
 
         if current_status:
 
+            logging.info(f"{device['name']} is Online")
+            
             message = (
 
                 f"🟢 NETWORK RESTORED\n\n" 
@@ -69,6 +93,8 @@ def monitor_device(device, previous_status):
             )
 
         else:
+
+            logging.warning(f"{device['name']} is Offline")
 
             message = (
 
@@ -100,39 +126,102 @@ def print_device_status(device, current_status):
         print(f"{device['name']:<20} {device['type']:<15} {device['ip']:<16} OFFLINE")
 
 
-while True:
+startup_line = []
 
-    os.system("cls")
 
-    current_time = datetime.now().strftime("%H:%M:%S")
+for device in devices:
 
-    print(f"\n[{current_time}] Checking device...\n")
+    status = check_ping(device["ip"])
+    previous_status[device["ip"]] = status
 
-    print(f"{'Devices':<20} {'Type':<15} {'IP Address':<16} Status")
+    if status:
 
-    print('-' * 60)
+        status_text = "🟢 Online"
+        logging.info(f"{device['name']} is Online")
 
-    online_count = 0
-    offline_count= 0
+    else:
 
-    for device in devices:
+        status_text = "🔴 Offline"
+        logging.warning(f"{device['name']} is Offline")
 
-        status = monitor_device(device, previous_status)
+    startup_line.append(
 
-        if status:
+        f"{device['name']} :{status_text}"
 
-           online_count += 1
+    )
 
-        else:
+message = (
 
-            offline_count += 1
+    "Network Monitor Started...\n\n" + "\n".join(startup_line)
+)
 
-    print(f"\n{'-' * 60}")
-    print("SUMMARY")
-    print(f"{'-' * 60}")
-    print(f"Total Devices : {len(devices)}")
-    print(f"Online        : {online_count}")
-    print(f"Offline       : {offline_count}")
-    print('-' * 60)
 
-    time.sleep(INTERVAL)
+send_alert(message)
+
+
+try:
+
+    while True:
+
+        os.system("cls")
+
+        current_time = datetime.now().strftime("%H:%M:%S")
+
+        print(f"\n[{current_time}] Checking device...\n")
+
+        print(f"{'Devices':<20} {'Type':<15} {'IP Address':<16} Status")
+
+        print('-' * 60)
+
+        online_count = 0
+        offline_count = 0
+        error_count = 0
+
+        for device in devices:
+
+            try:
+
+                status = monitor_device(device, previous_status)
+
+            except Exception:
+
+                logging.exception(
+
+                    f"Error monitor: {device['name']}"
+                )
+
+                error_count += 1
+
+                continue
+
+            if status:
+
+                online_count += 1
+
+            else:
+
+                offline_count += 1
+
+        logging.info(
+
+            "Monitoring Summary: %s online, %s Offline, %s Error",
+            online_count,
+            offline_count,
+            error_count,
+
+        )
+
+        print(f"\n{'-' * 60}")
+        print("SUMMARY")
+        print(f"{'-' * 60}")
+        print(f"Total Devices : {len(devices)}")
+        print(f"Online        : {online_count}")
+        print(f"Offline       : {offline_count}")
+        print(f"Error         : {error_count}")
+        print('-' * 60)
+
+        time.sleep(INTERVAL)
+
+except KeyboardInterrupt:
+
+    logging.info("Network Monitor Stopped...")
