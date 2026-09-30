@@ -68,10 +68,10 @@ def send_alert(message):
     bot.send_message(CHAT_ID, message)
 
 
-# Bot reply message to telegram
+# Bot reply message to command = /status
 
 @bot.message_handler(commands=["status"])
-def get_status(message):
+def status_command(message):
 
     status_message = "📊 Network Devices Status\n\n"
 
@@ -88,6 +88,41 @@ def get_status(message):
         status_message += f"{status} : {device["name"]}\n"
 
     bot.reply_to(message, status_message)
+
+
+# Bot reply message to command = /help
+
+@bot.message_handler(commands=["help"])
+def help_command(message):
+
+    help_text = (
+
+        "🤖 Network Monitor Bot\n\n"
+        "Available Commands:\n" 
+        "/status - Check device status\n" 
+        "/help - Show available commands"
+
+    )
+
+    bot.reply_to(message, help_text)
+
+
+# Bot reply message to command = /start
+
+@bot.message_handler(commands=["start"])
+def start_command(message):
+
+    start_text = (
+
+        "🤖 Welcome to Network Monitor Bot!\n\n" 
+        "I can monitor your network devices.\n\n" 
+        "Available Commands:\n"
+        "/status - Check device status\n" 
+        "/help - Show available commands"
+
+    )
+
+    bot.reply_to(message, start_text)
 
 
 # Create previous status memory.
@@ -198,14 +233,16 @@ send_alert(message)
 
 # Create thread for bot listener.
 
+
 thread_bot = threading.Thread(
 
     target=bot.infinity_polling,
-    daemon=True,
+    daemon=True
 
 )
 
 thread_bot.start()
+
 
 # Startup process of the main program and.
 
