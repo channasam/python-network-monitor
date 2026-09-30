@@ -1,5 +1,6 @@
 config.py
 __pycache__/
 *.pyc
+network_monitor.log
 test.py
 test2.py

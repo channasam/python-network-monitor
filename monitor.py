@@ -6,7 +6,22 @@ from config import BOT_TOKEN, CHAT_ID, INTERVAL, PING_TIMEOUT
 from datetime import datetime
 import logging
 from logging.handlers import RotatingFileHandler
+import threading
 
+
+bot = telebot.TeleBot(BOT_TOKEN)
+
+
+devices = [
+
+    {"name": "AC Pro F-Floor", "ip": "192.168.10.254", "type": "Access point"},
+    {"name": "AC Lr Stair", "ip": "192.168.10.55", "type": "Access Point"},
+    {"name": "AC Pro GR-Floor", "ip": "192.168.10.35", "type": "Access Point"},
+
+]
+
+
+# Log monitoring
 
 handler = RotatingFileHandler(
 
@@ -22,14 +37,14 @@ logging.basicConfig(
     handlers=[handler],
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
+
 )
 
 
 logging.info("Network Monitor Started...")
 
 
-bot = telebot.TeleBot(BOT_TOKEN)
-
+# Function for ping command
 
 def check_ping(ip_address):
 
@@ -53,13 +68,29 @@ def send_alert(message):
     bot.send_message(CHAT_ID, message)
 
 
-devices = [
+# Bot reply message to telegram
 
-    {"name": "AC Pro F-Floor", "ip": "192.168.10.254", "type": "Access point"},
-    {"name": "AC Lr Stair", "ip": "192.168.10.55", "type": "Access Point"},
-    {"name": "AC Pro GR-Floor", "ip": "192.168.10.35", "type": "Access Point"},
+@bot.message_handler(commands=["status"])
+def get_status(message):
 
-]
+    status_message = "📊 Network Devices Status\n\n"
+
+    for device in devices:
+
+        if check_ping(device["ip"]):
+
+            status = "🟢 Online"
+
+        else:
+
+            status = "🔴 Offline"
+
+        status_message += f"{status} : {device["name"]}\n"
+
+    bot.reply_to(message, status_message)
+
+
+# Create previous status memory.
 
 previous_status = {}
 
@@ -67,6 +98,8 @@ for device in devices:
 
     previous_status[device["ip"]] = None
 
+
+# Function for monitoring and prepare message for bot.
 
 def monitor_device(device, previous_status):
 
@@ -81,7 +114,7 @@ def monitor_device(device, previous_status):
         if current_status:
 
             logging.info(f"{device['name']} is Online")
-            
+
             message = (
 
                 f"🟢 NETWORK RESTORED\n\n" 
@@ -115,6 +148,8 @@ def monitor_device(device, previous_status):
     return current_status
 
 
+# Function for print devices status to terminal.
+
 def print_device_status(device, current_status):
 
     if current_status:
@@ -126,8 +161,9 @@ def print_device_status(device, current_status):
         print(f"{device['name']:<20} {device['type']:<15} {device['ip']:<16} OFFLINE")
 
 
-startup_line = []
+# Notification message to telegram when scrip started 
 
+startup_line = []
 
 for device in devices:
 
@@ -146,18 +182,32 @@ for device in devices:
 
     startup_line.append(
 
-        f"{device['name']} :{status_text}"
-
+        f"{status_text} : {device['name']}"
     )
 
-message = (
+    message = (
 
-    "Network Monitor Started...\n\n" + "\n".join(startup_line)
-)
+        "Network Minitor Started...\n\n" + "\n".join(startup_line) 
+    )
 
+
+# Send message to bot.
 
 send_alert(message)
 
+
+# Create thread for bot listener.
+
+thread_bot = threading.Thread(
+
+    target=bot.infinity_polling,
+    daemon=True,
+
+)
+
+thread_bot.start()
+
+# Startup process of the main program and.
 
 try:
 
@@ -187,7 +237,7 @@ try:
 
                 logging.exception(
 
-                    f"Error monitor: {device['name']}"
+                    f"Error Monitor: {device['name']}"
                 )
 
                 error_count += 1
@@ -204,11 +254,10 @@ try:
 
         logging.info(
 
-            "Monitoring Summary: %s online, %s Offline, %s Error",
+            "Monitor Sammry: %s Online, %s Offline, %s Error",
             online_count,
             offline_count,
             error_count,
-
         )
 
         print(f"\n{'-' * 60}")
@@ -224,4 +273,4 @@ try:
 
 except KeyboardInterrupt:
 
-    logging.info("Network Monitor Stopped...")
+    logging.info("Netwrok Monitor Stopped")
