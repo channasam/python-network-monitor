@@ -68,32 +68,42 @@ def send_alert(message):
     bot.send_message(CHAT_ID, message)
 
 
-# Bot reply message to command = /status
+# Bot reply message to command =/status
 
 @bot.message_handler(commands=["status"])
-def status_command(message):
+def get_status(message):
 
-    status_message = "📊 Network Devices Status\n\n"
+    online_count = 0
+    offline_count = 0
+
+    status_message = "📊 Networ Devices Status\n\n"
+    summary_message = f"Total Devices: {len(devices)} \n\n"
 
     for device in devices:
 
         if check_ping(device["ip"]):
 
             status = "🟢 Online"
+            online_count += 1
 
         else:
 
             status = "🔴 Offline"
+            offline_count += 1
 
-        status_message += f"{status} : {device["name"]}\n"
+        
+        status_message += f"{status} : {device["name"]} - IP: {device['ip']} \n"
 
-    bot.reply_to(message, status_message)
+    summary_message += f"🟢 Online : {online_count}\n​"
+    summary_message += f"🔴 Offline: {offline_count}\n"
+
+    bot.reply_to(message, f"{summary_message}\n {status_message}\n")
 
 
 # Bot reply message to command = /help
 
 @bot.message_handler(commands=["help"])
-def help_command(message):
+def get_help(message):
 
     help_text = (
 
@@ -109,6 +119,7 @@ def help_command(message):
 
 # Bot reply message to command = /start
 
+
 @bot.message_handler(commands=["start"])
 def start_command(message):
 
@@ -122,8 +133,9 @@ def start_command(message):
 
     )
 
-    bot.reply_to(message, start_text)
 
+    bot.reply_to(message, start_text)
+    
 
 # Create previous status memory.
 
@@ -232,7 +244,6 @@ send_alert(message)
 
 
 # Create thread for bot listener.
-
 
 thread_bot = threading.Thread(
 
