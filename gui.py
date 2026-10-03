@@ -1,55 +1,58 @@
 import tkinter as tk
-import subprocess
+import subprocess as subp
+import threading
 
 
 window = tk.Tk()
 
+window.title("Network Monitor Tool")
+window.geometry("800x600")
 
-def scan_network():
+def scan_net():
 
-    ips = [
-        "192.168.10.1",
-        "192.168.10.24",
-        "192.168.10.35",
-        "192.168.10.55",
-        "192.168.10.254"
-    ]      
+    online_devices = []
 
+    for number in range(1, 255):
 
-    for ip in ips:
+        ip = f"192.168.10.{number}"
 
-        result = subprocess.run(
+        result = subp.run(
 
-
-            ["ping", "-n", "1", "-w", "1000", ip],
+            ["ping", "-n", "1", "-w", "100", ip],
             capture_output=True
 
         )
 
         if result.returncode == 0:
 
+            online_devices.append(ip)
             print(f"🟢 {ip} is Online")
-
-        else:
-
-            print(f"🔴 {ip} is Offline")
+            
+    return online_devices
 
 
+def start_scan():
 
-window.title("Network Monitor Tool")
-window.geometry("800x600")
+    thread = threading.Thread(
+
+        target=scan_net
+    )
+
+    thread.start()
+
 
 
 scan_button = tk.Button(
 
     window,
     text="START SCAN",
-    command=scan_network
+    command=start_scan,
 
 )
 
 
 scan_button.pack()
+
 
 
 window.mainloop()
