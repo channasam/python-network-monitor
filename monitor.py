@@ -1,3 +1,4 @@
+# --- Importing library ---
 import telebot
 import subprocess
 import time
@@ -9,9 +10,11 @@ from logging.handlers import RotatingFileHandler
 import threading
 
 
+# --- Create bot ---
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
+# --- Create devices list ---
 devices = [
 
     {"name": "AC Pro F-Floor", "ip": "192.168.10.254", "type": "Access point"},
@@ -21,7 +24,7 @@ devices = [
 ]
 
 
-# Log monitoring
+# --- Create handler for log monitoring ---
 
 handler = RotatingFileHandler(
 
@@ -32,6 +35,7 @@ handler = RotatingFileHandler(
 )
 
 
+# --- Create basic configure for logging ---
 logging.basicConfig(
 
     handlers=[handler],
@@ -41,11 +45,11 @@ logging.basicConfig(
 )
 
 
+# --- Display text in log file ---
 logging.info("Network Monitor Started...")
 
 
-# Function for ping command
-
+# --- Function for ping command and return the result ---
 def check_ping(ip_address):
 
     try:
@@ -63,12 +67,13 @@ def check_ping(ip_address):
         return False
 
 
+# --- Function for send alert message to bot telegram ---
 def send_alert(message):
 
     bot.send_message(CHAT_ID, message)
 
 
-# Bot reply message to command =/status
+# --- Bot reply message to command =/status ---
 
 @bot.message_handler(commands=["status"])
 def get_status(message):
@@ -100,7 +105,7 @@ def get_status(message):
     bot.reply_to(message, f"{summary_message}\n {status_message}\n")
 
 
-# Bot reply message to command = /help
+# --- Bot reply message to command = /help ---
 
 @bot.message_handler(commands=["help"])
 def get_help(message):
@@ -117,7 +122,7 @@ def get_help(message):
     bot.reply_to(message, help_text)
 
 
-# Bot reply message to command = /start
+# --- Bot reply message to command = /start ---
 
 
 @bot.message_handler(commands=["start"])
@@ -137,8 +142,7 @@ def start_command(message):
     bot.reply_to(message, start_text)
     
 
-# Create previous status memory.
-
+# --- Create status memory for remember the status ---
 previous_status = {}
 
 for device in devices:
@@ -146,8 +150,7 @@ for device in devices:
     previous_status[device["ip"]] = None
 
 
-# Function for monitoring and prepare message for bot.
-
+# --- Function for monitoring and prepare message for bot and save to log file and return status ---
 def monitor_device(device, previous_status):
 
     current_status = check_ping(device["ip"])
@@ -195,8 +198,7 @@ def monitor_device(device, previous_status):
     return current_status
 
 
-# Function for print devices status to terminal.
-
+# --- Function for print devices status to terminal ---
 def print_device_status(device, current_status):
 
     if current_status:
@@ -208,8 +210,7 @@ def print_device_status(device, current_status):
         print(f"{device['name']:<20} {device['type']:<15} {device['ip']:<16} OFFLINE")
 
 
-# Notification message to telegram when scrip started 
-
+# --- Notification message to telegram when the scrip started ---
 startup_line = []
 
 for device in devices:
@@ -238,13 +239,11 @@ for device in devices:
     )
 
 
-# Send message to bot.
-
+# --- Send message to bot ---
 send_alert(message)
 
 
-# Create thread for bot listener.
-
+# --- Create thread for bot listener ---
 thread_bot = threading.Thread(
 
     target=bot.infinity_polling,
@@ -252,11 +251,12 @@ thread_bot = threading.Thread(
 
 )
 
+
+# --- start bot thread ---
 thread_bot.start()
 
 
-# Startup process of the main program and.
-
+# --- Run program and except some error ---
 try:
 
     while True:
