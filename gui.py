@@ -62,7 +62,7 @@ def scan_net():
 
             online_devices.append(ip)
             print(f"🟢 {ip} is Online")
-            devices_list.insert(tk.END, ip)
+            window.after(0, devices_list.insert, tk.END, ip)
             
     return online_devices
 
